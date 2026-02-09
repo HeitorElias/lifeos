@@ -1,73 +1,105 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
-import uuid
-from datetime import datetime, timezone
-
+from contextlib import asynccontextmanager
+import json
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Create the main app without a prefix
-app = FastAPI()
-
-# Create a router with the /api prefix
-api_router = APIRouter(prefix="/api")
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+async def seed_plans():
+    existing = await db.plans.count_documents({})
+    if existing > 0:
+        return
+    plans = [
+        {
+            "id": "free",
+            "name": "Graze",
+            "name_pt": "Graze (Grátis)",
+            "price_usd": 0,
+            "quotas": {
+                "nutrition_photo": {"limit": 3, "period": "monthly"},
+                "nutrition_text": {"limit": -1, "period": "monthly"},
+                "meal_plan": {"limit": 1, "period": "weekly"},
+                "agenda_actions": {"limit": 15, "period": "monthly"},
+                "reminders_email": {"limit": 20, "period": "monthly"},
+                "reminders_whatsapp": {"limit": 5, "period": "monthly"},
+                "finance_reminders": {"limit": 17, "period": "monthly"},
+                "finance_analysis": {"limit": 7, "period": "monthly"},
+            }
+        },
+        {
+            "id": "pro",
+            "name": "Boost",
+            "name_pt": "Boost (Pro)",
+            "price_usd": 24,
+            "quotas": {
+                "nutrition_photo": {"limit": 90, "period": "monthly"},
+                "nutrition_text": {"limit": -1, "period": "monthly"},
+                "meal_plan": {"limit": 1, "period": "daily"},
+                "agenda_actions": {"limit": -1, "period": "monthly"},
+                "reminders_email": {"limit": 200, "period": "monthly"},
+                "reminders_whatsapp": {"limit": 60, "period": "monthly"},
+                "finance_reminders": {"limit": 60, "period": "monthly"},
+                "finance_analysis": {"limit": 30, "period": "monthly"},
+            }
+        },
+        {
+            "id": "premium",
+            "name": "Thrive",
+            "name_pt": "Thrive (Premium)",
+            "price_usd": 39,
+            "quotas": {
+                "nutrition_photo": {"limit": 200, "period": "monthly"},
+                "nutrition_text": {"limit": -1, "period": "monthly"},
+                "meal_plan": {"limit": 1, "period": "daily"},
+                "agenda_actions": {"limit": -1, "period": "monthly"},
+                "reminders_email": {"limit": 1000, "period": "monthly"},
+                "reminders_whatsapp": {"limit": 200, "period": "monthly"},
+                "finance_reminders": {"limit": 200, "period": "monthly"},
+                "finance_analysis": {"limit": 100, "period": "monthly"},
+            }
+        }
+    ]
+    await db.plans.insert_many(plans)
+    logger.info("Seeded plans")
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
 
-# Add your routes to the router instead of directly to app
-@api_router.get("/")
-async def root():
-    return {"message": "Hello World"}
+async def seed_food_database():
+    existing = await db.foods.count_documents({})
+    if existing > 0:
+        return
+    food_file = ROOT_DIR / 'data' / 'food_database.json'
+    if food_file.exists():
+        with open(food_file, 'r', encoding='utf-8') as f:
+            foods = json.load(f)
+        await db.foods.insert_many(foods)
+        await db.foods.create_index("name_pt")
+        await db.foods.create_index("name_en")
+        await db.foods.create_index("keywords")
+        logger.info(f"Seeded {len(foods)} foods")
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await seed_plans()
+    await seed_food_database()
+    yield
+    client.close()
 
-# Include the router in the main app
-app.include_router(api_router)
+app = FastAPI(title="Life OS API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -77,13 +109,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+# Import and include routers
+from routes.auth import router as auth_router
+from routes.nutrition import router as nutrition_router
+from routes.agenda import router as agenda_router
+from routes.finance import router as finance_router
+from routes.chat import router as chat_router
+from routes.user import router as user_router
 
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
+app.include_router(auth_router)
+app.include_router(nutrition_router)
+app.include_router(agenda_router)
+app.include_router(finance_router)
+app.include_router(chat_router)
+app.include_router(user_router)
+
+
+@app.get("/api")
+async def root():
+    return {"message": "Life OS API v1.0"}
+
+
+@app.get("/api/health")
+async def health():
+    return {"status": "ok"}
