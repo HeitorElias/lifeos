@@ -1,0 +1,158 @@
+{
+  "project_name": "Life OS",
+  "theme": "dark",
+  "design_philosophy": {
+    "core_concept": "The Command Center for your Life",
+    "visual_style": "Dark Modern Premium",
+    "principles": [
+      "Deep Focus: Use absolute blacks (#09090b) to minimize eye strain and maximize concentration.",
+      "Neon Accents: Use high-contrast neon colors sparingly to guide attention to data.",
+      "Glassmorphism: Use subtle glass overlays for cards to create depth without clutter.",
+      "Density with Breathing Room: High data density (Bento grids) balanced with generous internal padding."
+    ]
+  },
+  "typography": {
+    "primary_font": "Inter",
+    "secondary_font": "Plus Jakarta Sans",
+    "headings": {
+      "font_family": "Plus Jakarta Sans, sans-serif",
+      "weights": {
+        "h1": "800",
+        "h2": "700",
+        "h3": "600"
+      },
+      "sizes": {
+        "h1": "text-4xl md:text-6xl tracking-tight",
+        "h2": "text-3xl md:text-4xl tracking-tight",
+        "h3": "text-2xl md:text-3xl tracking-normal"
+      }
+    },
+    "body": {
+      "font_family": "Inter, sans-serif",
+      "weights": {
+        "normal": "400",
+        "medium": "500"
+      },
+      "sizes": {
+        "base": "text-base leading-relaxed",
+        "small": "text-sm leading-normal",
+        "tiny": "text-xs tracking-wide uppercase"
+      }
+    }
+  },
+  "colors": {
+    "background": {
+      "default": "#09090b",
+      "paper": "#121214",
+      "subtle": "#1c1c1f"
+    },
+    "text": {
+      "primary": "#ededed",
+      "secondary": "#a1a1aa",
+      "muted": "#52525b"
+    },
+    "brand": {
+      "primary": "#3B82F6",
+      "secondary": "#A78BFA",
+      "accent": "#D9F99D"
+    },
+    "modules": {
+      "nutrition": {
+        "primary": "#84cc16",
+        "secondary": "#bef264",
+        "gradient": "from-lime-500 to-green-600"
+      },
+      "agenda": {
+        "primary": "#8b5cf6",
+        "secondary": "#c4b5fd",
+        "gradient": "from-violet-500 to-purple-600"
+      },
+      "finance": {
+        "primary": "#0ea5e9",
+        "secondary": "#7dd3fc",
+        "gradient": "from-sky-500 to-blue-600"
+      }
+    },
+    "status": {
+      "success": "#22c55e",
+      "warning": "#f59e0b",
+      "error": "#ef4444",
+      "info": "#3b82f6"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-6 py-2.5 font-medium transition-all shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)]",
+      "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-md px-6 py-2.5 font-medium",
+      "outline": "border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md px-6 py-2.5",
+      "ghost": "hover:bg-accent hover:text-accent-foreground rounded-md px-4 py-2"
+    },
+    "cards": {
+      "default": "bg-card text-card-foreground border border-border/40 shadow-sm rounded-xl p-6 relative overflow-hidden",
+      "glass": "bg-black/40 backdrop-blur-xl border border-white/10 shadow-xl rounded-xl p-6",
+      "interactive": "hover:-translate-y-1 hover:shadow-lg transition-all duration-300 cursor-pointer border-border/50 hover:border-primary/50"
+    },
+    "inputs": {
+      "default": "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+    }
+  },
+  "layout_strategies": {
+    "dashboard_grid": "grid grid-cols-1 md:grid-cols-12 gap-6 p-6",
+    "bento_grid": {
+      "hero_span": "col-span-12 md:col-span-8 lg:col-span-8 row-span-2",
+      "sidebar_span": "col-span-12 md:col-span-4 lg:col-span-4 row-span-2",
+      "standard_span": "col-span-12 md:col-span-4 lg:col-span-4"
+    },
+    "containers": {
+      "main": "max-w-7xl mx-auto w-full",
+      "narrow": "max-w-3xl mx-auto w-full"
+    }
+  },
+  "visual_enhancers": {
+    "gradients": {
+      "subtle_glow": "bg-gradient-to-b from-primary/5 to-transparent",
+      "tracing_beam": "absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 translate-x-[-100%] group-hover:animate-shine"
+    },
+    "textures": {
+      "noise": "bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"
+    }
+  },
+  "image_urls": {
+    "nutrition": {
+      "hero": "https://images.unsplash.com/photo-1761315600943-d8a5bb0c499f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHwxfHxoZWFsdGh5JTIwZm9vZCUyMHBsYXRlJTIwdG9wJTIwdmlldyUyMGRhcmslMjBiYWNrZ3JvdW5kfGVufDB8fHx8MTc3MDY2MTY2NXww&ixlib=rb-4.1.0&q=85",
+      "scanning_context": "https://images.unsplash.com/photo-1678007698777-c3477535532b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHw0fHxoZWFsdGh5JTIwZm9vZCUyMHBsYXRlJTIwdG9wJTIwdmlldyUyMGRhcmslMjBiYWNrZ3JvdW5kfGVufDB8fHx8MTc3MDY2MTY2NXww&ixlib=rb-4.1.0&q=85"
+    },
+    "agenda": {
+      "context": "https://images.unsplash.com/photo-1676993649692-69d1a5b664d4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzR8MHwxfHNlYXJjaHw0fHxtaW5pbWFsaXN0JTIwaG9tZSUyMG9mZmljZSUyMGRlc2slMjBzZXR1cCUyMGRhcmt8ZW58MHx8fHwxNzcwNjYxNjY1fDA&ixlib=rb-4.1.0&q=85",
+      "lifestyle": "https://images.unsplash.com/photo-1761083042622-9a48acd3fcc6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzR8MHwxfHNlYXJjaHwyfHxtaW5pbWFsaXN0JTIwaG9tZSUyMG9mZmljZSUyMGRlc2slMjBzZXR1cCUyMGRhcmt8ZW58MHx8fHwxNzcwNjYxNjY1fDA&ixlib=rb-4.1.0&q=85"
+    },
+    "finance": {
+      "abstract": "https://images.unsplash.com/photo-1748466694158-3e172aac0968?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MTN8MHwxfHNlYXJjaHwzfHxhYnN0cmFjdCUyMDNkJTIwZ2xhc3MlMjBjcmVkaXQlMjBjYXJkJTIwZmludGVjaCUyMGRhcmt8ZW58MHx8fHwxNzcwNjYxNjY2fDA&ixlib=rb-4.1.0&q=85"
+    },
+    "user": {
+      "avatar": "https://images.unsplash.com/photo-1584940120505-117038d90b05?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzB8MHwxfHNlYXJjaHw0fHxjb25maWRlbnQlMjB5b3VuZyUyMHByb2Zlc3Npb25hbCUyMHBvcnRyYWl0fGVufDB8fHx8MTc3MDY2MTY2N3ww&ixlib=rb-4.1.0&q=85"
+    }
+  },
+  "instructions_to_main_agent": [
+    "INSTALL FONTS: Add '@import url(\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap\");' to index.css",
+    "THEME SETUP: Ensure 'dark' class is applied to the html/body by default.",
+    "NAVIGATION: Create a unified sidebar or bottom nav (mobile) that allows seamless switching between 'Nutrition', 'Agenda', and 'Finance' without full page reloads if possible (use React Router).",
+    "AI CHAT: The AI Chat should be a floating action button (FAB) or a persistent sidebar widget that can overlay context.",
+    "CHARTS: Use 'Recharts' with the custom color palettes defined in 'colors.modules'.",
+    "GLASSMORPHISM: Apply 'backdrop-blur-xl bg-black/50 border-white/10' to all major dashboard containers.",
+    "ICONS: Use 'Lucide-React' icons. Stroke width should be 1.5px or 2px for clarity.",
+    "PORTUGUESE: All static text must be in Portuguese (BR). Use 'Bom dia', 'Agenda', 'Nutrição', 'Finanças', 'Configurações'.",
+    "TESTING: Add 'data-testid' to all interactive elements."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients",
+    "Create depth through layered design elements with z-index hierarchy",
+    "Use glass-morphism effects with backdrop filters (12-24px blur)",
+    "Every interaction needs micro-animations - hover states, transitions. Static = dead.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "Subtle grain textures, noise overlays, custom cursors: separates good from extraordinary.",
+    "Components MUST use named exports (export const ComponentName = ...)",
+    "Pages MUST use default exports (export default function PageName() {...})",
+    "Use 'sonner' for toasts"
+  ]
+}
