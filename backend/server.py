@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -17,6 +17,15 @@ db = client[os.environ['DB_NAME']]
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+
+def _cors_origins() -> list[str]:
+    raw = os.environ.get("CORS_ORIGINS", "http://localhost:3000")
+    return [origin.strip() for origin in raw.split(",") if origin.strip()]
+
+
+def _allow_credentials(origins: list[str]) -> bool:
+    return "*" not in origins
 
 
 async def seed_plans():
@@ -103,8 +112,8 @@ app = FastAPI(title="Life OS API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_credentials=_allow_credentials(_cors_origins()),
+    allow_origins=_cors_origins(),
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -116,6 +125,7 @@ from routes.agenda import router as agenda_router
 from routes.finance import router as finance_router
 from routes.chat import router as chat_router
 from routes.user import router as user_router
+from routes.plaid import router as plaid_router
 
 app.include_router(auth_router)
 app.include_router(nutrition_router)
@@ -123,6 +133,17 @@ app.include_router(agenda_router)
 app.include_router(finance_router)
 app.include_router(chat_router)
 app.include_router(user_router)
+app.include_router(plaid_router)
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    return response
 
 
 @app.get("/api")

@@ -20,7 +20,7 @@ const bottomItems = [
   { path: '/settings', icon: Settings, label: 'Configurações', color: 'text-zinc-400' },
 ];
 
-export const Sidebar = ({ collapsed, onToggle }) => {
+export const Sidebar = ({ collapsed, onToggle, mobileOpen, onCloseMobile }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
 
@@ -28,7 +28,7 @@ export const Sidebar = ({ collapsed, onToggle }) => {
     <TooltipProvider delayDuration={0}>
       <aside
         data-testid="sidebar"
-        className={`fixed left-0 top-0 h-screen z-40 flex flex-col border-r border-white/5 bg-[#09090b] transition-all duration-300 ${collapsed ? 'w-[68px]' : 'w-[220px]'}`}
+        className={`fixed left-0 top-0 h-screen z-40 flex flex-col border-r border-white/5 bg-[#09090b] transition-all duration-300 ${collapsed ? 'w-[68px]' : 'w-[220px]'} ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
       >
         {/* Logo */}
         <div className="flex items-center gap-3 px-4 h-16 border-b border-white/5">
@@ -57,6 +57,7 @@ export const Sidebar = ({ collapsed, onToggle }) => {
                         ? 'bg-white/10 text-white'
                         : 'text-zinc-500 hover:text-zinc-200 hover:bg-white/5'
                     }`}
+                    onClick={onCloseMobile}
                   >
                     <Icon className={`w-5 h-5 flex-shrink-0 ${active ? color : ''}`} />
                     {!collapsed && (
@@ -87,6 +88,7 @@ export const Sidebar = ({ collapsed, onToggle }) => {
                       ? 'bg-white/10 text-white'
                       : 'text-zinc-500 hover:text-zinc-200 hover:bg-white/5'
                   }`}
+                  onClick={onCloseMobile}
                 >
                   <Icon className={`w-5 h-5 flex-shrink-0 ${color}`} />
                   {!collapsed && <span className="text-sm font-medium">{label}</span>}
@@ -101,7 +103,7 @@ export const Sidebar = ({ collapsed, onToggle }) => {
           <Tooltip>
             <TooltipTrigger asChild>
               <button
-                onClick={logout}
+                onClick={() => { logout(); onCloseMobile?.(); }}
                 data-testid="logout-btn"
                 className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-all w-full"
               >
@@ -118,7 +120,7 @@ export const Sidebar = ({ collapsed, onToggle }) => {
           <button
             onClick={onToggle}
             data-testid="sidebar-toggle"
-            className="flex items-center justify-center w-full py-2 text-zinc-600 hover:text-zinc-300 transition-colors"
+            className="hidden md:flex items-center justify-center w-full py-2 text-zinc-600 hover:text-zinc-300 transition-colors"
           >
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>

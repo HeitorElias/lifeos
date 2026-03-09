@@ -32,6 +32,10 @@ export default function SettingsPage() {
         gender: res.data.profile?.gender || 'male',
         activity_level: res.data.profile?.activity_level || 'moderate',
         goal: res.data.profile?.goal || 'maintain',
+        monthly_savings_goal: res.data.profile?.finance_preferences?.monthly_savings_goal || '',
+        risk_profile: res.data.profile?.finance_preferences?.risk_profile || 'moderado',
+        report_style: res.data.profile?.finance_preferences?.report_style || 'executivo',
+        priority_categories: (res.data.profile?.finance_preferences?.priority_categories || []).join(', '),
       });
     } catch (e) { console.error(e); }
   };
@@ -43,8 +47,19 @@ export default function SettingsPage() {
   const saveProfile = async () => {
     setLoading(true);
     try {
-      const payload = { ...editForm };
-      if (payload.age) payload.age = parseInt(payload.age);
+      const payload = {
+        ...editForm,
+        finance_preferences: {
+          monthly_savings_goal: editForm.monthly_savings_goal ? Number(editForm.monthly_savings_goal) : null,
+          risk_profile: editForm.risk_profile || null,
+          report_style: editForm.report_style || 'executivo',
+          priority_categories: (editForm.priority_categories || '')
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean),
+        },
+      };
+      if (payload.age) payload.age = parseInt(payload.age, 10);
       if (payload.weight) payload.weight = parseFloat(payload.weight);
       if (payload.height) payload.height = parseFloat(payload.height);
       const res = await API.put('/user/profile', payload);
@@ -141,6 +156,39 @@ export default function SettingsPage() {
                 </Select>
               </div>
             </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-white/10">
+              <div className="space-y-2">
+                <Label className="text-zinc-400 text-sm">Meta de economia mensal (R$)</Label>
+                <Input type="number" value={editForm.monthly_savings_goal || ''} onChange={e => setEditForm({...editForm, monthly_savings_goal: e.target.value})} className="bg-white/5 border-white/10 text-white h-10" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-zinc-400 text-sm">Perfil de risco financeiro</Label>
+                <Select value={editForm.risk_profile} onValueChange={v => setEditForm({...editForm, risk_profile: v})}>
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white h-10"><SelectValue /></SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-700">
+                    <SelectItem value="conservador">Conservador</SelectItem>
+                    <SelectItem value="moderado">Moderado</SelectItem>
+                    <SelectItem value="arrojado">Arrojado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-zinc-400 text-sm">Estilo do relatório de IA</Label>
+                <Select value={editForm.report_style} onValueChange={v => setEditForm({...editForm, report_style: v})}>
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white h-10"><SelectValue /></SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-700">
+                    <SelectItem value="executivo">Executivo</SelectItem>
+                    <SelectItem value="detalhado">Detalhado</SelectItem>
+                    <SelectItem value="acao_rapida">Ação rápida</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-zinc-400 text-sm">Categorias prioritárias (separadas por vírgula)</Label>
+                <Input value={editForm.priority_categories || ''} onChange={e => setEditForm({...editForm, priority_categories: e.target.value})} className="bg-white/5 border-white/10 text-white h-10" />
+              </div>
+            </div>
+
             <Button data-testid="save-profile-btn" onClick={saveProfile} disabled={loading} className="bg-blue-500 hover:bg-blue-600 text-white gap-2">
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Salvar Perfil
