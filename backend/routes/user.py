@@ -14,6 +14,13 @@ _client = AsyncIOMotorClient(mongo_url)
 _db = _client[os.environ['DB_NAME']]
 
 
+class FinancePreferencesUpdate(BaseModel):
+    monthly_savings_goal: Optional[float] = None
+    risk_profile: Optional[str] = None
+    priority_categories: Optional[List[str]] = None
+    report_style: Optional[str] = None
+
+
 class ProfileUpdate(BaseModel):
     name: Optional[str] = None
     age: Optional[int] = None
@@ -23,6 +30,7 @@ class ProfileUpdate(BaseModel):
     activity_level: Optional[str] = None
     goal: Optional[str] = None
     restrictions: Optional[List[str]] = None
+    finance_preferences: Optional[FinancePreferencesUpdate] = None
 
 
 class OnboardingRequest(BaseModel):
@@ -54,10 +62,14 @@ async def update_profile(req: ProfileUpdate, request: Request):
     if req.name:
         update_data["name"] = req.name
 
-    profile_fields = {k: v for k, v in req.model_dump().items() if v is not None and k != "name"}
+    payload = req.model_dump(exclude_none=True)
+    profile_fields = {k: v for k, v in payload.items() if k != "name"}
     if profile_fields:
         for k, v in profile_fields.items():
-            update_data[f"profile.{k}"] = v
+            if k == "finance_preferences" and isinstance(v, dict):
+                update_data["profile.finance_preferences"] = v
+            else:
+                update_data[f"profile.{k}"] = v
 
     if update_data:
         update_data["updated_at"] = datetime.now(timezone.utc).isoformat()

@@ -92,62 +92,32 @@ async def send_message(req: ChatMessage, request: Request):
                     response_text = "Você não tem compromissos agendados."
 
         elif req.module == "finance":
-            from services.ai_provider import process_finance_message
-            from services.quota import check_quota, increment_quota
+            from services.finance_ai_service import finance_ai_service
 
             now = datetime.now(timezone.utc)
             current_month = now.strftime("%Y-%m")
-            expenses = await _db.expenses.find(
-                {"user_id": user_id, "date": {"$regex": f"^{current_month}"}},
+            prev_month = (now.replace(day=1) - __import__('datetime').timedelta(days=1)).strftime("%Y-%m")
+
+            manual_expenses = await _db.expenses.find(
+                {"user_id": user_id, "date": {"$regex": f"^{current_month}|^{prev_month}"}},
                 {"_id": 0}
-            ).to_list(200)
+            ).to_list(500)
+            bank_transactions = await _db.bank_transactions.find(
+                {"user_id": user_id, "date": {"$regex": f"^{current_month}|^{prev_month}"}, "pending": {"$ne": True}},
+                {"_id": 0}
+            ).to_list(1000)
 
-            categories = {}
-            for exp in expenses:
-                cat = exp.get("category", "Outros")
-                categories[cat] = categories.get(cat, 0) + exp.get("amount", 0)
+            user = await _db.users.find_one({"id": user_id}, {"_id": 0, "profile": 1})
+            user_preferences = (user or {}).get("profile", {}).get("finance_preferences", {})
 
-            context = f"Total: R$ {sum(e.get('amount', 0) for e in expenses):.2f}\n"
-            for cat, amount in sorted(categories.items(), key=lambda x: -x[1]):
-                context += f"- {cat}: R$ {amount:.2f}\n"
-
-            ai_result = await process_finance_message(req.message, context)
+            ai_result = await finance_ai_service.generate_insights(
+                req.message,
+                manual_expenses,
+                bank_transactions,
+                user_preferences=user_preferences,
+            )
             response_text = ai_result.get("response_text", "Entendi sua solicitação financeira.")
             response_data = ai_result
-
-            intent = ai_result.get("intent", "general_query")
-            payload = ai_result.get("payload", {})
-
-            if intent == "add_expense" and payload.get("amount"):
-                expense = {
-                    "id": str(uuid.uuid4()),
-                    "user_id": user_id,
-                    "amount": payload["amount"],
-                    "date": payload.get("date", now.strftime("%Y-%m-%d")),
-                    "category": payload.get("category", "Outros"),
-                    "description": payload.get("description", payload.get("name", "")),
-                    "created_at": now.isoformat()
-                }
-                await _db.expenses.insert_one(expense)
-                response_data["expense_created"] = expense["id"]
-                response_text += f"\n\nGasto de R$ {payload['amount']:.2f} registrado!"
-
-            elif intent == "add_bill" and payload.get("amount"):
-                bill = {
-                    "id": str(uuid.uuid4()),
-                    "user_id": user_id,
-                    "name": payload.get("name", ""),
-                    "amount": payload["amount"],
-                    "due_date": payload.get("due_date", ""),
-                    "category": payload.get("category", "Outros"),
-                    "recurrence": payload.get("recurrence", "once"),
-                    "status": "pending",
-                    "created_at": now.isoformat(),
-                    "updated_at": now.isoformat()
-                }
-                await _db.bills.insert_one(bill)
-                response_data["bill_created"] = bill["id"]
-                response_text += f"\n\nConta '{payload.get('name', '')}' no valor de R$ {payload['amount']:.2f} criada!"
 
         elif req.module == "nutrition":
             from services.ai_provider import analyze_food_text

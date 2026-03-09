@@ -74,7 +74,7 @@ export default function ChatPage() {
 
   return (
     <Layout>
-      <div data-testid="chat-page" className="h-[calc(100vh-48px)] flex flex-col animate-fade-in">
+      <div data-testid="chat-page" className="h-[calc(100vh-88px)] md:h-[calc(100vh-48px)] flex flex-col animate-fade-in">
         {/* Header */}
         <div className="flex items-center justify-between pb-4">
           <div className="flex items-center gap-3">
@@ -89,7 +89,7 @@ export default function ChatPage() {
         </div>
 
         {/* Module selector */}
-        <div className="flex gap-2 pb-4">
+        <div className="flex gap-2 pb-4 overflow-x-auto no-scrollbar">
           {MODULES.map(m => (
             <Button
               key={m.id}
@@ -122,7 +122,7 @@ export default function ChatPage() {
                       <Bot className={`w-4 h-4 ${currentMod?.color}`} />
                     </div>
                   )}
-                  <div className={`max-w-[70%] rounded-2xl px-4 py-3 ${
+                  <div className={`max-w-[82%] md:max-w-[70%] rounded-2xl px-3 md:px-4 py-3 ${
                     msg.role === 'user'
                       ? 'bg-blue-500/20 text-white'
                       : 'bg-white/5 text-zinc-200'
@@ -151,7 +151,7 @@ export default function ChatPage() {
           </ScrollArea>
 
           {/* Input */}
-          <div className="p-4 border-t border-white/5">
+          <div className="p-3 md:p-4 border-t border-white/5">
             <div className="flex gap-3">
               <Input
                 ref={inputRef}
